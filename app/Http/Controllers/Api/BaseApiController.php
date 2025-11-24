@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 
 class BaseApiController extends Controller
 {
+    use AuthorizesRequests;
+
     protected function ok($data = null, string $message = 'OK', int $code = 200): JsonResponse
     {
         return response()->json(['message'=>$message,'data'=>$data], $code);

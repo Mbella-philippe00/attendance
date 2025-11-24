@@ -2,12 +2,28 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
-class User extends BaseModel
+class User extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
+    public $incrementing = false;
+    protected $keyType = 'string';
 
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
+        });
+    }
     protected $fillable = [
         'employee_id','email','password_hash','first_name','last_name','role',
         'department','position','site_id','manager_id','phone','avatar_url',
@@ -22,6 +38,7 @@ class User extends BaseModel
         'work_schedule' => 'array',
         'is_active'     => 'boolean',
         'last_login_at' => 'datetime',
+        
     ];
 
     /** RELATIONS */
@@ -56,5 +73,3 @@ class User extends BaseModel
     public function isManager(): bool { return in_array($this->role, ['manager','hr','super_admin']); }
     public function fullName(): string { return "{$this->first_name} {$this->last_name}"; }
 }
-use Laravel\Sanctum\HasApiTokens;
-

@@ -3,64 +3,45 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\\Models\\Absence;
-use Illuminate\Auth\Access\Response;
+use App\Models\Absence;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AbsencePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    public function before($user, $ability)
     {
-        return false;
+        if ($user->role === 'super_admin') {
+            return true;
+        }
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Absence $absence): bool
+    public function viewAny(User $user)
     {
-        return false;
+        return in_array($user->role, ['super_admin', 'hr', 'manager']);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function view(User $user, Absence $absence)
     {
-        return false;
+        return $user->role === 'super_admin' || 
+               $user->role === 'hr' || 
+               $user->id === $absence->user_id;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Absence $absence): bool
+    public function create(User $user)
     {
-        return false;
+        return in_array($user->role, ['super_admin', 'hr', 'employee']);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Absence $absence): bool
+    public function update(User $user, Absence $absence)
     {
-        return false;
+        return $user->role === 'super_admin' || 
+               $user->role === 'hr' || 
+               $user->id === $absence->user_id;
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Absence $absence): bool
+    public function delete(User $user, Absence $absence)
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Absence $absence): bool
-    {
-        return false;
+        return $user->role === 'super_admin' || $user->role === 'hr';
     }
 }
