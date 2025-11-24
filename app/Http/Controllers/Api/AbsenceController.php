@@ -16,22 +16,23 @@ class AbsenceController extends BaseApiController
         $this->authorize('viewAny', Absence::class);
         return $this->ok(Absence::all());
 
-        // $q = Absence::query()
-        //     ->with(['user:id,first_name,last_name'])
-        //     ->select(['id','user_id','type','start_date','end_date','status','working_days']);
+        $q = Absence::query()
+            ->with(['user:id,first_name,last_name'])
+            ->select(['id','user_id','type','start_date','end_date','status','working_days']);
 
-        // if ($req->filled('user_id')) $q->forUser($req->user_id);
-        // if ($req->filled('status'))  $q->where('status', $req->status);
-        // if ($req->filled('start') || $req->filled('end')) {
-        //     $q->betweenDates('start_date', $req->get('start'), $req->get('end'));
-        // }
+        if ($req->filled('user_id')) $q->forUser($req->user_id);
+        if ($req->filled('status'))  $q->where('status', $req->status);
+        if ($req->filled('start') || $req->filled('end')) {
+            $q->betweenDates('start_date', $req->get('start'), $req->get('end'));
+        }
 
-        // $paginator = $q->latestFirst('start_date')->paginate(min($req->get('per_page',20),100));
-        // return $this->paginated($paginator, AbsenceResource::class);
+        $paginator = $q->latestFirst('start_date')->paginate(min($req->get('per_page',20),100));
+        return $this->paginated($paginator, AbsenceResource::class);
     }
 
     public function store(StoreAbsenceRequest $req)
     {
+        // return $req;
         $this->authorize('create', Absence::class);
 
         // empêcher chevauchement sur la même période
