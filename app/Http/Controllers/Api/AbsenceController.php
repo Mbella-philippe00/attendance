@@ -59,7 +59,8 @@ class AbsenceController extends BaseApiController
     public function update(UpdateAbsenceRequest $req, string $id)
     {
         $absence = Absence::findOrFail($id);
-        $this->authorize('update', $absence);
+        return $req;
+        // $this->authorize('update', $absence);
         $absence->update($req->validated());
 
         return $this->ok(new AbsenceResource($absence->fresh('user:id,first_name,last_name')), 'Updated');
