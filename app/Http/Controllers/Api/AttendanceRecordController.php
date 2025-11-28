@@ -97,6 +97,7 @@ class AttendanceRecordController extends BaseApiController
         return $this->ok(null, 'Deleted', 204);
     }
 
+    
     /** Action métier: validation manager */
     public function validateRecord(Request $req, string $id)
     {
