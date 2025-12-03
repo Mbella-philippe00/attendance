@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\\Models\\User;
 use Illuminate\Auth\Access\Response;
 
 class UserPolicy
@@ -13,7 +12,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->isAdmin() || $user->isManager();
     }
 
     /**
@@ -21,7 +20,18 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return false;
+        // Admins can view any user
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
+        // Managers can view users in their department
+        if ($user->isManager() && $model->department_id === $user->department_id) {
+            return true;
+        }
+        
+        // Users can view their own profile
+        return $user->id === $model->id;
     }
 
     /**
@@ -29,7 +39,8 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admins and managers can create users
+        return $user->isAdmin() || $user->isManager();
     }
 
     /**
@@ -37,7 +48,18 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return false;
+        // Admins can update any user
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
+        // Managers can update users in their department (but not change roles)
+        if ($user->isManager() && $model->department_id === $user->department_id) {
+            return true;
+        }
+        
+        // Users can update their own profile
+        return $user->id === $model->id;
     }
 
     /**
@@ -45,7 +67,20 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return false;
+        // Prevent users from deleting themselves
+        if ($user->id === $model->id) {
+            return false;
+        }
+        
+        // Admins can delete any user
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
+        // Managers can delete users in their department (except other admins)
+        return $user->isManager() && 
+               $model->department_id === $user->department_id && 
+               !$model->isAdmin();
     }
 
     /**
@@ -53,7 +88,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return false;
+        return $user->isAdmin();
     }
 
     /**
@@ -61,6 +96,7 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        return false;
+        // Only admins can force delete, and not themselves
+        return $user->isAdmin() && $user->id !== $model->id;
     }
 }

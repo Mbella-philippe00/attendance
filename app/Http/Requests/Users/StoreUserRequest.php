@@ -11,7 +11,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true; // Update this with your authorization logic if needed
     }
 
     /**
@@ -22,7 +22,13 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['sometimes', 'string', 'in:super_admin,hr,manager,employee,auditor'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'department_id' => ['nullable', 'exists:departments,id']
         ];
     }
 }

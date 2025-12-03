@@ -28,11 +28,51 @@ class UserController extends BaseApiController
         return $this->paginated($q->orderBy('last_name')->paginate($perPage), UserResource::class);
     }
 
-    public function store(StoreUserRequest $req)
+    // public function store(StoreUserRequest $req)
+    // {
+    //     $this->authorize('create', User::class);
+    //     $user = User::create($req->validated());
+    //     return $user;
+    //     // return $this->ok(new UserResource($user->load('site:id,name')), 'Created', 201);
+    // }
+
+    public function store(StoreUserRequest $request)
     {
-        $this->authorize('create', User::class);
-        $user = User::create($req->validated());
-        return $this->ok(new UserResource($user->load('site:id,name')), 'Created', 201);
+        try {
+            // Get validated data
+            $validated = $request->validated();
+            
+            // Generate a unique employee_id using UUID
+            $validated['employee_id'] = (string) \Illuminate\Support\Str::uuid();
+            $validated['password_hash'] = hash('sha256', $validated['password']);
+            // Log the input for debugging
+            \Log::info('Creating user with data:', $validated);
+            
+            // Create the user with the generated employee_id
+            $user = User::create($validated);
+            
+            // Log the created user
+            \Log::info('User created successfully:', $user->toArray());
+            
+            // Return the created user with proper resource
+            return new UserResource($user->load('site:id,name'));
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error creating user: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            return response()->json([
+                'message' => 'Failed to create user',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(string $id)

@@ -72,4 +72,6 @@ class User extends Authenticatable
     /** HELPERS (KPIs rapides) */
     public function isManager(): bool { return in_array($this->role, ['manager','hr','super_admin']); }
     public function fullName(): string { return "{$this->first_name} {$this->last_name}"; }
+    public function isAdmin(): bool { return $this->role === 'super_admin'; }
 }
+

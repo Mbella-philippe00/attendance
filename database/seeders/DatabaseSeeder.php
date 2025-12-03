@@ -10,7 +10,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             SiteSeeder::class,
-            UserSeeder::class,
+            DepartmentSeeder::class, // Add DepartmentSeeder here
+            UserSeeder::class,       // UserSeeder should come after DepartmentSeeder
             DeviceSeeder::class,
             ShiftTemplateSeeder::class,
             ScheduleSeeder::class,

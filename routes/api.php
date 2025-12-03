@@ -70,4 +70,13 @@ Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
     Route::get('settings', [SystemSettingController::class, 'index']);
     Route::get('settings/{key}', [SystemSettingController::class, 'showByKey']);
     Route::put('settings/{key}', [SystemSettingController::class, 'updateByKey']);
+
+    
 });
+
+Route::apiResource('departments', \App\Http\Controllers\Api\DepartmentController::class)
+    ->middleware('auth:sanctum');
+
+// Additional route for department dropdown
+Route::get('departments/dropdown', [\App\Http\Controllers\Api\DepartmentController::class, 'dropdown'])
+    ->middleware('auth:sanctum');
